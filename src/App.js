@@ -11,7 +11,8 @@ class App extends Component {
     this.state = {
       zip: "01020",
       distance: "5",
-      storesToDisplay: []
+      storesToDisplay: [],
+      passPrice: null
     }
   }
   render() {
@@ -43,12 +44,12 @@ class App extends Component {
               onChange={input => this.setState({ zip: input.target.value })}
             />
             <input
+              className="input miles_input"
+              placeholder="25"
               value={this.state.distance}
               onChange={input =>
                 this.setState({ distance: input.target.value })
               }
-              className="input miles_input"
-              placeholder="25"
             />
             <label>Miles</label>
           </section>
@@ -56,6 +57,9 @@ class App extends Component {
         </div>
 
         <div className="products_container">{this.renderProducts()}</div>
+        <h1 style={{ alignSelf: "center" }}>
+          Unlimited Carwash Pass Price NEAR YOU: {this.state.passPrice}
+        </h1>
       </div>
     )
   }
@@ -68,19 +72,27 @@ class App extends Component {
         }/radius.json/${this.state.zip}/${this.state.distance}/mile`
       )
       .then(response => {
-        const zipCodes = response.data.zip_codes
+        console.log(response)
+        const zipCodes = response.data.zip_codes.sort((a, b) => {
+          // Sort the array by distance
+          return a.distance < b.distance
+        })
 
         let storesNearBy = []
         for (let i = 0; i < Stores.length; i += 1) {
           for (let j = 0; j < zipCodes.length; j += 1) {
-            if (Stores[i].storeZip === zipCodes[j].zip_code) {
+            if (
+              Stores[i].storeZip === zipCodes[j].zip_code &&
+              storesNearBy.length < 2
+            ) {
               storesNearBy.push(Stores[i])
             }
           }
         }
 
         this.setState({
-          storesToDisplay: storesNearBy
+          storesToDisplay: storesNearBy,
+          passPrice: storesNearBy[0] ? storesNearBy[0].washpassPrice : null
         })
       })
   }
