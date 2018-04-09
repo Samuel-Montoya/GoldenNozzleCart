@@ -9,13 +9,18 @@ class App extends Component {
     super()
 
     this.state = {
-      zip: "01020",
+      zip: "01105",
       distance: "5",
-      storesToDisplay: [],
-      passPrice: null
+      storesToDisplay: Stores.map((store, index) => {
+        return store
+      }),
+      // storesToDisplay: [],
+      isSearching: false
     }
   }
+
   render() {
+    console.log(this.state)
     return (
       <div className="main_container">
         <header className="header_container">
@@ -36,35 +41,55 @@ class App extends Component {
         </header>
 
         <div className="search_container">
-          <section>
+          <section
+            style={{
+              height: "25px",
+              width: "300px",
+              display: "flex",
+              alignItems: "center"
+            }}
+          >
             <input
               className="input"
               placeholder="Zip Code..."
               value={this.state.zip}
               onChange={input => this.setState({ zip: input.target.value })}
             />
-            <input
-              className="input miles_input"
-              placeholder="25"
-              value={this.state.distance}
+            <select
+              className="miles_input"
               onChange={input =>
                 this.setState({ distance: input.target.value })
               }
-            />
+              value={this.state.distance}
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={15}>15</option>
+              <option value={20}>20</option>
+              <option value={25}>25</option>
+            </select>
             <label>Miles</label>
           </section>
-          <button onClick={this.getStoresNearZip}>Find Products</button>
+          <button
+            className="add_to_cart_button"
+            onClick={this.getStoresNearZip}
+          >
+            Find Products
+          </button>
         </div>
 
-        <div className="products_container">{this.renderProducts()}</div>
-        <h1 style={{ alignSelf: "center" }}>
-          Unlimited Carwash Pass Price NEAR YOU: {this.state.passPrice}
-        </h1>
+        <div className="stores_container">
+          {this.state.isSearching ? <h1>Searching...</h1> : this.renderStores()}
+        </div>
       </div>
     )
   }
 
   getStoresNearZip = () => {
+    this.setState({
+      storesToDisplay: [],
+      isSearching: true
+    })
     axios
       .get(
         `https://www.zipcodeapi.com/rest/${
@@ -72,42 +97,119 @@ class App extends Component {
         }/radius.json/${this.state.zip}/${this.state.distance}/mile`
       )
       .then(response => {
-        console.log(response)
-        const zipCodes = response.data.zip_codes.sort((a, b) => {
-          // Sort the array by distance
-          return a.distance < b.distance
+        let StoresToMap = JSON.parse(JSON.stringify(Stores))
+
+        let zipCodes = response.data.zip_codes.sort((a, b) => {
+          // Sort all the zip codes by distance
+          return a.distance - b.distance
         })
 
+        let sortedStores = StoresToMap.sort(a => {
+          // Sort all stores by entered zip code, so that the one they entered comes first.
+          return a.zipCode === this.state.zipCode
+        }).reverse()
+
         let storesNearBy = []
-        for (let i = 0; i < Stores.length; i += 1) {
+
+        let amountToShow = this.state.distance <= 5 ? 1 : 10
+
+        for (let i = 0; i < sortedStores.length; i += 1) {
           for (let j = 0; j < zipCodes.length; j += 1) {
             if (
-              Stores[i].storeZip === zipCodes[j].zip_code &&
-              storesNearBy.length < 2
+              sortedStores[i].storeZip === zipCodes[j].zip_code &&
+              storesNearBy.length < amountToShow
             ) {
-              storesNearBy.push(Stores[i])
+              storesNearBy.push(sortedStores[i])
             }
           }
         }
 
         this.setState({
           storesToDisplay: storesNearBy,
-          passPrice: storesNearBy[0] ? storesNearBy[0].washpassPrice : null
+          isSearching: false
         })
       })
   }
 
+  renderStores = () =>
+    this.state.storesToDisplay.map((store, key) => {
+      return (
+        <React.Fragment key={key}>
+          <div className="store_container">
+            <h1>Golden Nozzle Car Wash - {store.storeType}</h1>
+            <h2>
+              {store.storeCity} {store.storeState}, {store.storeZip}
+            </h2>
+            <h2>{store.storeAddress}</h2>
+            <h3>{store.storePhone}</h3>
+          </div>
+
+          <div className="products_container">
+            {store.products.map((product, key2) => (
+              <div className="product_container">
+                <img
+                  src="https://websiteconnect.drb.com/Portals/goldennozzle/ItemGraphics/store-unlimited_wash_pass.png"
+                  alt=""
+                />
+                <section className="product_info_container">
+                  <h1 style={{ textAlign: "center" }}>
+                    <span style={{ color: "#2f3094" }}>Unlimited</span>
+                    <br />
+                    <span style={{ fontSize: "20px" }}>
+                      {key2 <= 2 ? "Exterior" : "Interior & Exterior"} Plan{" "}
+                      {key2 <= 2 ? key2 + 1 : key2 - 2}
+                    </span>
+                  </h1>
+                  <p>Plan Includes: </p>
+                  <ul>
+                    {product.description.map((desc, key3) => (
+                      <li key={key3}>{desc}</li>
+                    ))}
+                  </ul>
+                </section>
+                <section
+                  className="purchase_container"
+                  style={{ textAlign: "center" }}
+                >
+                  <h2 style={{ color: "limegreen" }}>
+                    ${product.price}{" "}
+                    <span style={{ fontSize: "14px", color: "gray" }}>
+                      {" "}
+                      / monthly
+                    </span>
+                  </h2>
+                  <button className="add_to_cart_button">Add To Cart</button>
+                </section>
+              </div>
+            ))}
+          </div>
+        </React.Fragment>
+      )
+    })
+
   renderProducts = () =>
     this.state.storesToDisplay.map((store, key) => {
       return (
-        <div key={key} style={{ marginBottom: "15px" }}>
-          <h1>{store.storeName}</h1>
-          <h1>
-            {store.storeCity} {store.storeState}, {store.storeZip}
-          </h1>
-          <h1>{store.storeAddress}</h1>
-          <h1>{store.storePhone}</h1>
-          <h1>${store.washpassPrice}</h1>
+        <div className="product_container" key={key}>
+          <img
+            src="https://websiteconnect.drb.com/Portals/goldennozzle/ItemGraphics/store-unlimited_wash_pass.png"
+            alt=""
+          />
+          <section className="product_info_container">
+            <h1>
+              <span style={{ color: "#2f3094" }}>Unlimited Wash Plan</span> -
+              Exterior
+            </h1>
+            <p>Plan Includes: </p>
+            <ul>
+              <li>Exterior Soft Cloth Wash</li>
+            </ul>
+          </section>
+
+          <section style={{ textAlign: "center" }}>
+            <h1 style={{ color: "limegreen" }}>${store.washpassPrice}</h1>
+            <button className="add_to_cart_button">Add To Cart</button>
+          </section>
         </div>
       )
     })
