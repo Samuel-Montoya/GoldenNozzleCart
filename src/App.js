@@ -2,6 +2,7 @@ import React, { Component } from "react"
 import "./App.css"
 import Stores from "./Stores"
 import axios from "axios"
+import passImage from "./resources/washpass.jpg"
 require("dotenv").config()
 
 class App extends Component {
@@ -41,10 +42,27 @@ class App extends Component {
         </header>
 
         <div className="search_container">
+          <img
+            src={passImage}
+            alt=""
+            style={{ marginBottom: "30px", width: "300px" }}
+          />
+          <h1
+            style={{
+              marginBottom: "30px",
+              fontSize: "24px",
+              width: "180%",
+              textAlign: "center",
+              fontWeight: "300",
+              color: "rgb(220, 15, 15)"
+            }}
+          >
+            Enter your zip code for location(s) near{" "}
+            <span style={{ fontWeight: "600" }}>you!</span>
+          </h1>
           <section
             style={{
-              height: "25px",
-              width: "300px",
+              width: "100%",
               display: "flex",
               alignItems: "center"
             }}
@@ -74,7 +92,7 @@ class App extends Component {
             className="add_to_cart_button"
             onClick={this.getStoresNearZip}
           >
-            Find Products
+            Find Unlimited Wash Pass Plans
           </button>
         </div>
 
@@ -97,32 +115,28 @@ class App extends Component {
         }/radius.json/${this.state.zip}/${this.state.distance}/mile`
       )
       .then(response => {
-        let StoresToMap = JSON.parse(JSON.stringify(Stores))
+        // Copy the stores array so it doesn't get changed.
+        let storeLocations = JSON.parse(JSON.stringify(Stores))
 
+        // Sort all the zip codes by distance.
         let zipCodes = response.data.zip_codes.sort((a, b) => {
-          // Sort all the zip codes by distance
           return a.distance - b.distance
         })
 
-        let sortedStores = StoresToMap.sort(a => {
-          // Sort all stores by entered zip code, so that the one they entered comes first.
-          return a.zipCode === this.state.zipCode
-        }).reverse()
-
         let storesNearBy = []
 
-        let amountToShow = this.state.distance <= 5 ? 1 : 10
-
-        for (let i = 0; i < sortedStores.length; i += 1) {
+        for (let i = 0; i < storeLocations.length; i += 1) {
           for (let j = 0; j < zipCodes.length; j += 1) {
-            if (
-              sortedStores[i].storeZip === zipCodes[j].zip_code &&
-              storesNearBy.length < amountToShow
-            ) {
-              storesNearBy.push(sortedStores[i])
+            if (storeLocations[i].storeZip === zipCodes[j].zip_code) {
+              storeLocations[i].distance = zipCodes[j].distance
+              storesNearBy.push(storeLocations[i])
             }
           }
         }
+
+        storesNearBy.sort((a, b) => {
+          return a.distance - b.distance
+        })
 
         this.setState({
           storesToDisplay: storesNearBy,
@@ -160,8 +174,22 @@ class App extends Component {
                       {key2 <= 2 ? key2 + 1 : key2 - 2}
                     </span>
                   </h1>
+                  {key2 >= 3 && (
+                    <p
+                      style={{
+                        fontSize: "12px",
+                        textAlign: "center",
+                        marginTop: "-5px",
+                        color: "red",
+                        marginBottom: "15px"
+                      }}
+                    >
+                      Includes Towel Drying, Washing Inside Windows, Vacuuming
+                      Interior and Dusting of Dashboard.
+                    </p>
+                  )}
                   <p>Plan Includes: </p>
-                  <ul>
+                  <ul style={key2 >= 3 ? { marginBottom: "80px" } : null}>
                     {product.description.map((desc, key3) => (
                       <li key={key3}>{desc}</li>
                     ))}
@@ -171,7 +199,7 @@ class App extends Component {
                   className="purchase_container"
                   style={{ textAlign: "center" }}
                 >
-                  <h2 style={{ color: "limegreen" }}>
+                  <h2 style={{ color: "#dc0f0f" }}>
                     ${product.price}{" "}
                     <span style={{ fontSize: "14px", color: "gray" }}>
                       {" "}
@@ -184,33 +212,6 @@ class App extends Component {
             ))}
           </div>
         </React.Fragment>
-      )
-    })
-
-  renderProducts = () =>
-    this.state.storesToDisplay.map((store, key) => {
-      return (
-        <div className="product_container" key={key}>
-          <img
-            src="https://websiteconnect.drb.com/Portals/goldennozzle/ItemGraphics/store-unlimited_wash_pass.png"
-            alt=""
-          />
-          <section className="product_info_container">
-            <h1>
-              <span style={{ color: "#2f3094" }}>Unlimited Wash Plan</span> -
-              Exterior
-            </h1>
-            <p>Plan Includes: </p>
-            <ul>
-              <li>Exterior Soft Cloth Wash</li>
-            </ul>
-          </section>
-
-          <section style={{ textAlign: "center" }}>
-            <h1 style={{ color: "limegreen" }}>${store.washpassPrice}</h1>
-            <button className="add_to_cart_button">Add To Cart</button>
-          </section>
-        </div>
       )
     })
 }
