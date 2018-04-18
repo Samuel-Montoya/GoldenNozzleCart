@@ -78,7 +78,7 @@ body {
 .miles_input {
   width: 50px;
   font-size: 15px;
-  height: 30px;
+  height: 40px !important;
   margin-right: 10px;
 }
 

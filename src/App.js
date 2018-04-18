@@ -19,6 +19,7 @@ class App extends Component {
       // storesToDisplay: [],
       isSearching: false
     }
+    axios.defaults.headers.common["Accept"] = "text/plain, */*; q=0.01"
   }
 
   render() {
@@ -147,6 +148,10 @@ class App extends Component {
           storesToDisplay: storesNearBy,
           isSearching: false
         })
+      })
+      .catch(error => {
+        alert("Server could not be reached.")
+        this.setState({ isSearching: false })
       })
   }
 
