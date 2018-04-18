@@ -116,9 +116,9 @@ class App extends Component {
 
     axios
       .get(
-        `https://www.zipcodeapi.com/rest/${require("./secret")}/radius.json/${
-          this.state.zip
-        }/${this.state.distance}/mile`
+        `https://www.zipcodeapi.com/rest/${
+          process.env.REACT_APP_API_KEY
+        }/radius.json/${this.state.zip}/${this.state.distance}/mile`
       )
       .then(response => {
         // Copy the stores array so it doesn't get changed.
