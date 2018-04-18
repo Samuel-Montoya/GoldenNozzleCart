@@ -22,7 +22,6 @@ class App extends Component {
   }
 
   render() {
-    console.log(this.state)
     return (
       <div className="main_container">
         <header className="header_container">
