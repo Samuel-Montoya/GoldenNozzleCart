@@ -137,6 +137,33 @@ let stores = [
     ]
   },
   {
+    storeType: "Exterior",
+    storeAddress: "492 Pleasant Street",
+    storeCity: "Northampton",
+    storeState: "MA",
+    storeZip: "01060",
+    storePhone: "(413) 584-1660",
+    products
+  },
+  {
+    storeType: "Exterior",
+    storeAddress: "1050 South Street",
+    storeCity: "Pittsfield",
+    storeState: "MA",
+    storeZip: "01201",
+    storePhone: "(413) 642-9057",
+    products
+  },
+  {
+    storeType: "Exterior",
+    storeAddress: "1315 Boston Road",
+    storeCity: "Springfield",
+    storeState: "MA",
+    storeZip: "01119",
+    storePhone: "(413) 642-9049",
+    products
+  },
+  {
     storeType: "Full Serve",
     storeAddress: "915 East Columbus Ave",
     storeCity: "Springfield",
@@ -144,6 +171,33 @@ let stores = [
     storeZip: "01105",
     storePhone: "(413) 734-0330",
     products: combinedProducts
+  },
+  {
+    storeType: "Exterior",
+    storeAddress: "518 Memorial Ave",
+    storeCity: "West Springfield",
+    storeState: "MA",
+    storeZip: "01089",
+    storePhone: "(413) 642-9046",
+    products
+  },
+  {
+    storeType: "Exterior",
+    storeAddress: "2685 Westfield Street (RT.20)",
+    storeCity: "West Springfield",
+    storeState: "MA",
+    storeZip: "01089",
+    storePhone: "(413) 642-9048",
+    products
+  },
+  {
+    storeType: "Exterior",
+    storeAddress: "90 S. Maple Street",
+    storeCity: "Westfield",
+    storeState: "MA",
+    storeZip: "01085",
+    storePhone: "(413) 642-9047",
+    products
   }
 ]
 
