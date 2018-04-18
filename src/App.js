@@ -5,7 +5,6 @@ import axios from "axios"
 import { Spin } from "react-loading"
 import passImage from "./resources/washpass.jpg"
 import ReactLoading from "react-loading"
-require("dotenv").config()
 
 class App extends Component {
   constructor() {
