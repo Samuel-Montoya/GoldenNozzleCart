@@ -2,7 +2,9 @@ import React, { Component } from "react"
 import "./App.css"
 import Stores from "./Stores"
 import axios from "axios"
+import { Spin } from "react-loading"
 import passImage from "./resources/washpass.jpg"
+import ReactLoading from "react-loading"
 require("dotenv").config()
 
 class App extends Component {
@@ -97,7 +99,11 @@ class App extends Component {
         </div>
 
         <div className="stores_container">
-          {this.state.isSearching ? <h1>Searching...</h1> : this.renderStores()}
+          {this.state.isSearching ? (
+            <ReactLoading type="spin" color="#2f3094" delay={0} />
+          ) : (
+            this.renderStores()
+          )}
         </div>
       </div>
     )
@@ -108,11 +114,12 @@ class App extends Component {
       storesToDisplay: [],
       isSearching: true
     })
+
     axios
       .get(
-        `https://www.zipcodeapi.com/rest/${
-          process.env.REACT_APP_API_KEY
-        }/radius.json/${this.state.zip}/${this.state.distance}/mile`
+        `https://www.zipcodeapi.com/rest/${require("./secret")}/radius.json/${
+          this.state.zip
+        }/${this.state.distance}/mile`
       )
       .then(response => {
         // Copy the stores array so it doesn't get changed.
