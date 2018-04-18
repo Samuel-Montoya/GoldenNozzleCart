@@ -12,17 +12,17 @@ class App extends Component {
 
     this.state = {
       zip: "01105",
-      distance: "5",
-      storesToDisplay: Stores.map((store, index) => {
-        return store
-      }),
-      // storesToDisplay: [],
+      distance: "10",
+      storesToDisplay: [],
       isSearching: false
     }
     axios.defaults.headers.common["Accept"] = "text/plain, */*; q=0.01"
   }
 
+  componentDidMount() {}
+
   render() {
+    console.log(this.state)
     return (
       <div className="main_container">
         <header className="header_container">
@@ -65,7 +65,8 @@ class App extends Component {
             style={{
               width: "100%",
               display: "flex",
-              alignItems: "center"
+              alignItems: "center",
+              height: "35px"
             }}
           >
             <input
@@ -114,45 +115,61 @@ class App extends Component {
       isSearching: true
     })
 
-    axios
-      .get(
-        `https://www.zipcodeapi.com/rest/${
-          process.env.REACT_APP_API_KEY
-        }/radius.json/${this.state.zip}/${this.state.distance}/mile`
+    if (localStorage.getItem(`${this.state.zip}_${this.state.distance}`)) {
+      this.calculateStores(
+        JSON.parse(
+          localStorage.getItem(`${this.state.zip}_${this.state.distance}`)
+        )
       )
-      .then(response => {
-        // Copy the stores array so it doesn't get changed.
-        let storeLocations = JSON.parse(JSON.stringify(Stores))
-
-        // Sort all the zip codes by distance.
-        let zipCodes = response.data.zip_codes.sort((a, b) => {
-          return a.distance - b.distance
+    } else {
+      axios
+        .get(
+          `https://www.zipcodeapi.com/rest/${
+            process.env.REACT_APP_API_KEY
+          }/radius.json/${this.state.zip}/${this.state.distance}/mile`
+        )
+        .then(response => {
+          localStorage.setItem(
+            `${this.state.zip}_${this.state.distance}`,
+            JSON.stringify(response.data.zip_codes)
+          )
+          this.calculateStores(response.data.zip_codes)
         })
+        .catch(error => {
+          alert("Server could not be reached.")
+          this.setState({ isSearching: false })
+        })
+    }
+  }
 
-        let storesNearBy = []
+  calculateStores = zip_codes => {
+    // Copy the stores array so it doesn't get changed.
+    let storeLocations = JSON.parse(JSON.stringify(Stores))
 
-        for (let i = 0; i < storeLocations.length; i += 1) {
-          for (let j = 0; j < zipCodes.length; j += 1) {
-            if (storeLocations[i].storeZip === zipCodes[j].zip_code) {
-              storeLocations[i].distance = zipCodes[j].distance
-              storesNearBy.push(storeLocations[i])
-            }
-          }
+    // Sort all the zip codes by distance.
+    let zipCodes = zip_codes.sort((a, b) => {
+      return a.distance - b.distance
+    })
+
+    let storesNearBy = []
+
+    for (let i = 0; i < storeLocations.length; i += 1) {
+      for (let j = 0; j < zipCodes.length; j += 1) {
+        if (storeLocations[i].storeZip === zipCodes[j].zip_code) {
+          storeLocations[i].distance = zipCodes[j].distance
+          storesNearBy.push(storeLocations[i])
         }
+      }
+    }
 
-        storesNearBy.sort((a, b) => {
-          return a.distance - b.distance
-        })
+    storesNearBy.sort((a, b) => {
+      return a.distance - b.distance
+    })
 
-        this.setState({
-          storesToDisplay: storesNearBy,
-          isSearching: false
-        })
-      })
-      .catch(error => {
-        alert("Server could not be reached.")
-        this.setState({ isSearching: false })
-      })
+    this.setState({
+      storesToDisplay: storesNearBy,
+      isSearching: false
+    })
   }
 
   renderStores = () =>
